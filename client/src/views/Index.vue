@@ -7,8 +7,6 @@
         >
           <login-card header-color="green">
             <h4 slot="title" class="card-title">Login</h4>
-            <div :style="signupImage"></div>
-
             <p slot="description" class="description">You shall not pass.</p>
             <md-field class="md-form-group" slot="inputs">
               <md-icon>email</md-icon>
@@ -20,7 +18,7 @@
               <label>Password...</label>
               <md-input v-model="password"></md-input>
             </md-field>
-            <md-button slot="footer" class="md-simple md-success md-lg">
+            <md-button slot="footer" class="md-simple md-success md-lg" v-on:click="login">
               Get Started
             </md-button>
           </login-card>
@@ -32,6 +30,7 @@
 
 <script>
 import { LoginCard } from "@/components";
+import axios from 'axios';
 
 export default {
   components: {
@@ -43,15 +42,10 @@ export default {
     signup: {
       type: String,
       default: require("@/assets/img/profile_city.jpg")
-    },
-    wizard: {
-      type: String,
-      default: require("@/assets/img/emojing_wizard_400x300.gif")
     }
   },
   data() {
     return {
-      firstname: null,
       email: null,
       password: null,
       leafShow: false
@@ -64,6 +58,18 @@ export default {
       } else {
         this.leafShow = true;
       }
+    },
+    login() {
+      axios.post('http://localhost:3000/login', {
+        email: this.email,
+        password: this.password 
+      })
+      .then(function (response) {
+        console.log(response);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
     }
   },
   computed: {
@@ -75,11 +81,6 @@ export default {
     signupImage() {
       return {
         backgroundImage: `url(${this.signup})`
-      };
-    },
-    wizardImage() {
-      return {
-        backgroundImage: `url(${this.wizard})`
       };
     }
   },
