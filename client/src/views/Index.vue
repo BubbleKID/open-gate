@@ -8,11 +8,11 @@
           <login-card header-color="green">
             <h4 slot="title" class="card-title">Login</h4>
             <p slot="description" class="description">You shall not pass.</p>
-            <lottie id="doorAnimation" slot="title" :options="defaultOptions" :height="200" :width="200" v-on:animCreated="handleAnimation" />
+            <lottie id="doorAnimation" slot="title" :options="defaultOptions" :height="300" :width="300" v-on:animCreated="handleAnimation" />
             <md-field class="md-form-group" slot="inputs">
               <md-icon>email</md-icon>
               <label>Email...</label>
-              <md-input v-model="email" type="email"></md-input>
+              <md-input type="email" v-model="email"></md-input>
             </md-field>
             <md-field class="md-form-group" slot="inputs">
               <md-icon>lock_outline</md-icon>
@@ -53,10 +53,13 @@ export default {
   },
   data() {
     return {
-      email: null,
-      password: null,
+      email: '',
+      password: '',
       leafShow: false,
-      defaultOptions: { animationData: animationData.default },
+      defaultOptions: { 
+        animationData: animationData.default,
+        loop: false
+      },
       animationSpeed: 1,
       anim: {},
       style: {
@@ -64,8 +67,17 @@ export default {
           height: '500px',
           overflow: 'hidden',
           margin: '0 auto'
-      }
+      },
+      isFocus: false,
     };
+  },
+  watch: {
+    email: function() {
+      this.handleInputChange();
+    },
+    password: function() {
+      this.handleInputChange();
+    }
   },
   methods: {
     leafActive() {
@@ -76,25 +88,45 @@ export default {
       }
     },
     login() {
-      axios
-        .post("http://localhost:3000/login", {
-          email: this.email,
-          password: this.password
-        })
-        .then(function(response) {
-          console.log(response);
-        })
-        .catch(function(error) {
-          console.log(error);
-        });
+      event.preventDefault();
+      let animation = this.anim;
+      if(this.email !== '' && this.password !== '') {
+         axios
+          .post("http://localhost:3000/login", {
+            email: this.email,
+            password: this.password
+          })
+          .then(function(response) {
+            console.log(response);
+            if(response.data === 'success') {
+               animation.playSegments([[10,37]], true);
+              setTimeout(function() {
+                animation.stop();
+              }, 5000);
+            }
+          })
+          .catch(function(error) {
+            console.log(error);
+          });
+      }
     },
     handleAnimation: function(anim) {
         this.anim = anim;
-        console.log(anim); //这里可以看到 lottie 对象的全部属性
     },
-    handleInputChange() {
-      console.log('inputing');
-    }
+    handleInputChange(){
+       if(this.isFocus === false) {
+        if(this.email !== '' || this.password !== '') { 
+          this.anim.playSegments([[0,10]], true);
+          this.isFocus = true;
+        }
+      } else {
+        if(this.email === '' && this.password ==='') {
+          this.anim.setDirection(-1);
+          this.anim.playSegments([[10,0]], true);
+          this.isFocus = false;
+        }
+      }
+    },
   },
   computed: {
     headerStyle() {
@@ -111,11 +143,8 @@ export default {
   mounted() {
     this.leafActive();
     window.addEventListener("resize", this.leafActive);
-    //this.anim.setDirection(24)
-    this.anim.stop()
-    // this.anim.playSegments([0,20], true);
-    //this.anim.goToAndPlay( 100 ); 
-    //this.anim.stop();
+    this.anim.setSpeed(0.5);
+    this.anim.stop();
   },
   beforeDestroy() {
     window.removeEventListener("resize", this.leafActive);
