@@ -3,11 +3,12 @@
     <div class="container">
       <div class="md-layout">
         <div
-          class="md-layout-item md-size-33 md-medium-size-40 md-small-size-50 md-xsmall-size-70 mx-auto text-center"
+          class="md-layout-item md-size-50 md-medium-size-50 md-small-size-60 md-xsmall-size-80 mx-auto text-center"
         >
           <login-card header-color="green">
             <h4 slot="title" class="card-title">Login</h4>
             <p slot="description" class="description">You shall not pass.</p>
+            <lottie id="doorAnimation" slot="title" :options="defaultOptions" :height="200" :width="200" v-on:animCreated="handleAnimation" />
             <md-field class="md-form-group" slot="inputs">
               <md-icon>email</md-icon>
               <label>Email...</label>
@@ -16,10 +17,14 @@
             <md-field class="md-form-group" slot="inputs">
               <md-icon>lock_outline</md-icon>
               <label>Password...</label>
-              <md-input v-model="password"></md-input>
+              <md-input type="password" v-model="password"></md-input>
             </md-field>
-            <md-button slot="footer" class="md-simple md-success md-lg" v-on:click="login">
-              Get Started
+            <md-button
+              slot="footer"
+              class="md-simple md-success md-lg"
+              v-on:click="login"
+            >
+              Let me in
             </md-button>
           </login-card>
         </div>
@@ -30,7 +35,9 @@
 
 <script>
 import { LoginCard } from "@/components";
-import axios from 'axios';
+import axios from "axios";
+import lottie from 'lottie-web';
+import * as animationData from '../assets/img/data.json';
 
 export default {
   components: {
@@ -42,13 +49,22 @@ export default {
     signup: {
       type: String,
       default: require("@/assets/img/profile_city.jpg")
-    }
+    },
   },
   data() {
     return {
       email: null,
       password: null,
-      leafShow: false
+      leafShow: false,
+      defaultOptions: { animationData: animationData.default },
+      animationSpeed: 1,
+      anim: {},
+      style: {
+          width: '300px',
+          height: '500px',
+          overflow: 'hidden',
+          margin: '0 auto'
+      }
     };
   },
   methods: {
@@ -60,16 +76,24 @@ export default {
       }
     },
     login() {
-      axios.post('http://localhost:3000/login', {
-        email: this.email,
-        password: this.password 
-      })
-      .then(function (response) {
-        console.log(response);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+      axios
+        .post("http://localhost:3000/login", {
+          email: this.email,
+          password: this.password
+        })
+        .then(function(response) {
+          console.log(response);
+        })
+        .catch(function(error) {
+          console.log(error);
+        });
+    },
+    handleAnimation: function(anim) {
+        this.anim = anim;
+        console.log(anim); //这里可以看到 lottie 对象的全部属性
+    },
+    handleInputChange() {
+      console.log('inputing');
     }
   },
   computed: {
@@ -82,11 +106,16 @@ export default {
       return {
         backgroundImage: `url(${this.signup})`
       };
-    }
+    },
   },
   mounted() {
     this.leafActive();
     window.addEventListener("resize", this.leafActive);
+    //this.anim.setDirection(24)
+    this.anim.stop()
+    // this.anim.playSegments([0,20], true);
+    //this.anim.goToAndPlay( 100 ); 
+    //this.anim.stop();
   },
   beforeDestroy() {
     window.removeEventListener("resize", this.leafActive);

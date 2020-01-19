@@ -17,6 +17,7 @@ import App from "./App.vue";
 import router from "./router";
 
 import MaterialKit from "./plugins/material-kit";
+import lottie from 'vue-lottie';
 
 Vue.config.productionTip = false;
 
@@ -25,6 +26,8 @@ Vue.use(MaterialKit);
 const NavbarStore = {
   showNavbar: false
 };
+
+Vue.component('lottie', lottie);
 
 Vue.mixin({
   data() {
