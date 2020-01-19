@@ -4,6 +4,10 @@ var express = require('express');
 var cors = require('cors');
 var bodyParser = require('body-parser');
 var app = express();
+var mysql      = require('mysql');
+var connection = mysql.createConnection({
+  
+});
 
 const DATA = 12;
   
@@ -30,19 +34,21 @@ app.use(bodyParser.json())
   });
 
   app.post('/login',function(req,res){
-     var user={
-         email:'admin',
-  　　　  password:'admin'
-  　　}
-  　　if (req.body.email == user.email && req.body.password == user.password) {
-        res.setHeader('Content-Type', 'text/plain');
-        res.write('success');
-        res.end()
-  　　} else {
-        res.setHeader('Content-Type', 'text/plain');
-        res.write('you posted:\n');
-        res.end(JSON.stringify(req.body, null, 2));
-  　　}
+      connection.connect();
+      connection.query('SELECT * FROM user WHERE user = ' + req.body.email, function (error, results, fields) {
+        if (error) throw error;W
+        if (req.body.password == results[0].password) {
+          res.setHeader('Content-Type', 'text/plain');
+          res.write('success');
+          res.end()
+        } else {
+          res.setHeader('Content-Type', 'text/plain');
+          res.write('you posted:\n');
+          res.end(JSON.stringify(req.body, null, 2));
+        }
+        // console.log('The solution is: ', results[0]);
+      });
+      connection.end();
   });
 
   app.listen(3000, function () {
