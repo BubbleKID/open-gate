@@ -8,6 +8,6 @@ module.exports = {
   },
   devServer: {
     proxy: 'http://localhost:8080',
-    public: '192.168.0.185:8080' //local ip
+    public: '192.168.0.186:8080' //local ip
   }
 };

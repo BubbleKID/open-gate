@@ -92,7 +92,7 @@ export default {
       let animation = this.anim;
       if(this.email !== '' && this.password !== '') {
          axios
-          .post("http://192.168.0.187:3000/login", {
+          .post("http://192.168.0.186:3000/login", {
             email: this.email,
             password: this.password
           })
