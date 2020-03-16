@@ -5,8 +5,8 @@
   "version": "1.2.2",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve --open",
- "build": "vue-cli-service build && gulp licenses",
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build && gulp licenses",
     "lint": "vue-cli-service lint",
     "dev": "npm run serve",
     "install:clean": "rm -rf node_modules/ && rm -rf package-lock.json && npm install && npm run dev"
