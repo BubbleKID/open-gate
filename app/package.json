@@ -8,11 +8,19 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "@eva-design/eva": "^1.4.0",
+    "@ui-kitten/components": "^4.4.1",
     "expo": "~36.0.0",
     "react": "~16.9.0",
     "react-dom": "~16.9.0",
     "react-native": "https://github.com/expo/react-native/archive/sdk-36.0.0.tar.gz",
-    "react-native-web": "~0.11.7"
+    "react-native-canvas": "^0.1.37",
+    "react-native-keyboard-aware-scroll-view": "^0.9.1",
+    "react-native-svg": "9.13.3",
+    "react-native-web": "~0.11.7",
+    "react-native-webview": "7.4.3",
+    "typescript": "^3.8.3",
+    "lottie-react-native": "~2.6.1"
   },
   "devDependencies": {
     "babel-preset-expo": "~8.0.0",

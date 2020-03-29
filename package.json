@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@eva-design/eva": "^1.4.0",
     "axios": "^0.19.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
@@ -16,6 +17,7 @@
     "johnny-five": "^1.4.0",
     "mysql": "^2.17.1",
     "raspicam": "^0.2.14",
+    "react-native-svg": "^12.0.3",
     "rpio": "^2.1.1"
   },
   "devDependencies": {
