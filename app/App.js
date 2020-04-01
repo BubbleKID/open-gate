@@ -8,6 +8,8 @@ import { KeyboardAvoidingView } from './extra/3rd-party';
 import { AsyncStorage } from 'react-native';
 import Storage from 'react-native-storage';
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
+import * as animationData from './assets/data.json';
+import axios from "axios";
 
 let storage = new Storage({
   size: 1000,
@@ -35,21 +37,25 @@ export default class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      progress: new Animated.Value(0),
       email: '',
       password: '',
       setEmail: '',
       passwordVisible: false,
       checked: true,
+      isPlayed: false,
+      speed: 1,
     };
 
     this.onSignInButtonPress = this.onSignInButtonPress.bind(this);
     this.onPasswordIconPress = this.onPasswordIconPress.bind(this);
     this.onCheckedChange = this.onCheckedChange.bind(this);
     this.setPasswordVisible = this.setPasswordVisible.bind(this);
+    this.onInputChange = this.onInputChange.bind(this);
   }
 
   componentDidMount() {
+    this.animation.reset();
+   
     storage.load({
       key: 'loginState',
       autoSync: true,
@@ -61,25 +67,40 @@ export default class App extends React.Component {
         this.setState({
           email: ret.email,
           password: ret.password,
+          isPlayed: true,
         });
+        this.animation.play(0,10);
       }
-    })
-    Animated.timing(this.state.progress, {
-      toValue: 0.1,
-      duration: 5000,
-      easing: Easing.linear,
-    }).start();
+    });
   }
 
   onSignInButtonPress = () => {
-    storage.save({
-      key: 'loginState',
-      data: {
-        email: this.state.email,
-        password: this.state.password,
-      },
-      expires: null,
-    });
+    if(this.email !== '' && this.password !== '') {
+      axios
+       .post("http://192.168.0.186:3000/login", {
+         email: this.email,
+         password: this.password
+       })
+       .then(function(response) {
+         if(response.data === 'success') {
+           setTimeout(function() {
+             this.animation.play(10, 37);
+             this.animation.stop();
+           }, 5000);
+           storage.save({
+            key: 'loginState',
+            data: {
+              email: this.state.email,
+              password: this.state.password,
+            },
+            expires: null,
+          });
+         }
+       })
+       .catch(function(error) {
+         console.log(error);
+       });
+   }
   };
 
   onPasswordIconPress = () => {
@@ -94,19 +115,50 @@ export default class App extends React.Component {
     this.setState({passwordVisible: !this.state.passwordVisible});
   };
 
+  onInputChange = (value, name) => {
+    this.setState({[name]: value});
+    
+  
+   
+  }
+
+  componentDidUpdate(prevState) {
+    const { email, password, isPlayed, speed } = this.state;
+
+    if(email == '' && password == '' && isPlayed == true) {
+      this.setState({
+        speed: -1,
+        isPlayed: false,
+      }, () => this.animation.play(0, 10));
+    }
+
+    if((email != '' || password != '') && isPlayed == false) {
+      this.setState({
+        speed: 1,
+        isPlayed: true,
+      }, () => this.animation.play(0, 10));
+    }
+  }
+
   render() {
-    const { email, password, passwordVisible, progress, checked } = this.state;
+    const { email, password, passwordVisible, checked, speed } = this.state;
 
     return (
       <React.Fragment>
       <IconRegistry icons={EvaIconsPack} />
       <ApplicationProvider mapping={mapping} theme={lightTheme}>
         <KeyboardAvoidingView>
-          <ImageOverlay
-            style={styles.container}
-            source={require('./assets/image-background.jpg')}>
+          <ImageOverlay style={styles.container} source={require('./assets/image-background.jpg')}>
             <View style={styles.headerContainer}>
-            <LottieView style={styles.animation} source={require('./assets/data.json')} progress={progress}/>
+              <LottieView 
+                ref={animation => {
+                  this.animation = animation;
+                }}
+                loop={false}
+                style={styles.animation}
+                source={require('./assets/data.json')}
+                speed={speed}
+              />
               <Text
                 category='h1'
                 status='control'>
@@ -125,7 +177,7 @@ export default class App extends React.Component {
                 placeholder='Email'
                 icon={PersonIcon}
                 value={email}
-                onChangeText={(email) => this.setState({email})}
+                onChangeText={(value) => this.onInputChange(value, 'email')}
               />
               <Input
                 style={styles.passwordInput}
@@ -134,7 +186,7 @@ export default class App extends React.Component {
                 icon={passwordVisible ? EyeIcon : EyeOffIcon}
                 value={password}
                 secureTextEntry={!passwordVisible}
-                onChangeText={(password) => this.setState({password})}
+                onChangeText={(value) => this.onInputChange(value, 'password')}
                 onIconPress={this.onPasswordIconPress}
               />
               <Toggle style={styles.toggle}
