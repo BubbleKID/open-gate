@@ -1,14 +1,12 @@
 import React from 'react';
-import { StyleSheet, View, Animated, Easing } from 'react-native';
+import { StyleSheet, View, Animated, Easing, AsyncStorage, Alert } from 'react-native';
 import { ApplicationProvider, Button, Input, Text, Toggle, Icon, IconRegistry } from '@ui-kitten/components';
 import { mapping, light as lightTheme } from '@eva-design/eva';
 import { ImageOverlay } from './extra/image-overlay.component';
 import LottieView from 'lottie-react-native';
 import { KeyboardAvoidingView } from './extra/3rd-party';
-import { AsyncStorage } from 'react-native';
 import Storage from 'react-native-storage';
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
-import * as animationData from './assets/data.json';
 import axios from "axios";
 
 let storage = new Storage({
@@ -74,8 +72,16 @@ export default class App extends React.Component {
     });
   }
 
-  onSignInButtonPress = () => {
+  onSignInButtonPress() {
     if(this.email !== '' && this.password !== '') {
+      Alert.alert(
+        'Cannot find the server',
+        'This app requires AEMG WiFi from 635 building, please make sure your device has connect to AEMG Wifi',
+        [
+          {text: 'OK', onPress: () => console.log('OK Pressed')},
+        ],
+        { cancelable: false }
+      );
       axios
        .post("http://192.168.0.186:3000/login", {
          email: this.email,
