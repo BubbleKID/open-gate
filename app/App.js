@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Animated, Easing, AsyncStorage, Alert } from 'react-native';
+import { StyleSheet, View, Animated, Easing, AsyncStorage, Alert, ActivityIndicator } from 'react-native';
 import { ApplicationProvider, Button, Input, Text, Toggle, Icon, IconRegistry } from '@ui-kitten/components';
 import { mapping, light as lightTheme } from '@eva-design/eva';
 import { ImageOverlay } from './extra/image-overlay.component';
@@ -42,6 +42,9 @@ export default class App extends React.Component {
       checked: true,
       isPlayed: false,
       speed: 1,
+      iconRef: React.createRef(),
+      btnText: 'LET ME IN',
+      btnIcon: null,
     };
 
     this.onSignInButtonPress = this.onSignInButtonPress.bind(this);
@@ -49,11 +52,12 @@ export default class App extends React.Component {
     this.onCheckedChange = this.onCheckedChange.bind(this);
     this.setPasswordVisible = this.setPasswordVisible.bind(this);
     this.onInputChange = this.onInputChange.bind(this);
+    this.loadingIcon = this.loadingIcon.bind(this);
   }
 
   componentDidMount() {
     this.animation.reset();
-   
+
     storage.load({
       key: 'loginState',
       autoSync: true,
@@ -73,41 +77,65 @@ export default class App extends React.Component {
   }
 
   onSignInButtonPress() {
-    if(this.email !== '' && this.password !== '') {
-      Alert.alert(
-        'Cannot find the server',
-        'This app requires AEMG WiFi from 635 building, please make sure your device has connect to AEMG Wifi',
-        [
-          {text: 'OK', onPress: () => console.log('OK Pressed')},
-        ],
-        { cancelable: false }
-      );
-      axios
-       .post("http://192.168.0.186:3000/login", {
-         email: this.email,
-         password: this.password
-       })
-       .then(function(response) {
-         if(response.data === 'success') {
-           setTimeout(function() {
-             this.animation.play(10, 37);
-             this.animation.stop();
-           }, 5000);
-           storage.save({
-            key: 'loginState',
-            data: {
-              email: this.state.email,
-              password: this.state.password,
-            },
-            expires: null,
+    const { email, password, checked, btnText, btnIcon } = this.state;
+    if(email !== '' && password !== '') {
+
+      this.setState({
+        btnText: '',
+        btnIcon: this.loadingIcon,
+      });
+      axios({
+        method: 'post',
+        url: "http://192.168.0.186:3000/login",
+        timeout: 1000,
+        data: {
+         email,
+         password,
+        }
+      })
+       .then((response) => {
+          if(response.data === 'success') {
+            setTimeout(function() {
+              this.animation.play(10, 37);
+              this.animation.stop();
+            }, 5000);
+            if(checked) {
+              storage.save({
+                key: 'loginState',
+                data: {
+                  email,
+                  password,
+                },
+                expires: null,
+              });
+            }
+          }
+          this.setState({
+            btnText: 'LET ME IN',
+            btnIcon: null,
           });
-         }
-       })
-       .catch(function(error) {
-         console.log(error);
+        }
+       ).catch((error) => {
+          Alert.alert(
+            'Cannot find the server',
+            'This app requires AEMG WiFi in 635 building, please make sure your device has connect to AEMG Wifi',
+            [
+              {text: 'OK', onPress: () => console.log('OK Pressed')},
+            ],
+            { cancelable: false }
+          );
+          this.setState({
+            btnText: 'LET ME IN',
+            btnIcon: null,
+          });
+          console.log(error);
        });
    }
   };
+
+  loadingIcon = () => (
+    <ActivityIndicator size="large" color="#54cc70" />
+  );
 
   onPasswordIconPress = () => {
     this.setPasswordVisible(!this.state.passwordVisible);
@@ -123,14 +151,12 @@ export default class App extends React.Component {
 
   onInputChange = (value, name) => {
     this.setState({[name]: value});
-    
-  
-   
   }
 
   componentDidUpdate(prevState) {
-    const { email, password, isPlayed, speed } = this.state;
+    const { email, password, isPlayed } = this.state;
 
+    // 速度为-1, 倒放动画
     if(email == '' && password == '' && isPlayed == true) {
       this.setState({
         speed: -1,
@@ -138,6 +164,7 @@ export default class App extends React.Component {
       }, () => this.animation.play(0, 10));
     }
 
+    // 速度为1, 正常顺序
     if((email != '' || password != '') && isPlayed == false) {
       this.setState({
         speed: 1,
@@ -147,7 +174,7 @@ export default class App extends React.Component {
   }
 
   render() {
-    const { email, password, passwordVisible, checked, speed } = this.state;
+    const { email, password, passwordVisible, checked, speed, btnText, btnIcon } = this.state;
 
     return (
       <React.Fragment>
@@ -156,7 +183,7 @@ export default class App extends React.Component {
         <KeyboardAvoidingView>
           <ImageOverlay style={styles.container} source={require('./assets/image-background.jpg')}>
             <View style={styles.headerContainer}>
-              <LottieView 
+              <LottieView
                 ref={animation => {
                   this.animation = animation;
                 }}
@@ -206,8 +233,10 @@ export default class App extends React.Component {
               style={styles.signInButton}
               status='control'
               size='giant'
-              onPress={this.onSignInButtonPress}>
-              LET ME IN
+              onPress={this.onSignInButtonPress}
+              icon={btnIcon}
+            >
+             {btnText}
             </Button>
           </ImageOverlay>
         </KeyboardAvoidingView>
@@ -266,7 +295,8 @@ const styles = StyleSheet.create({
   forgotPasswordButton: {
     paddingHorizontal: 0,
   },
+  loadingIcon: {
+    fontSize: 18,
+    color: '#3bdb73',
+  }
 });
-
-
-
