@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Blank Template",
+    "name": "Open the gate",
     "slug": "app",
     "privacy": "public",
     "sdkVersion": "36.0.0",
@@ -25,6 +25,10 @@
     ],
     "ios": {
       "supportsTablet": true
+    },
+    "android": {
+      "package": "com.mark.open_the_gate",
+      "versionCode": 1
     }
   }
 }

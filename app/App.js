@@ -118,7 +118,7 @@ export default class App extends React.Component {
        ).catch((error) => {
           Alert.alert(
             'Cannot find the server',
-            'This app requires AEMG WiFi in 635 building, please make sure your device has connect to AEMG Wifi',
+            'This app requires AEMG WiFi in 635 office, please make sure your device has connect to AEMG Wifi',
             [
               {text: 'OK', onPress: () => console.log('OK Pressed')},
             ],
@@ -130,7 +130,16 @@ export default class App extends React.Component {
           });
           console.log(error);
        });
-   }
+    } else {
+      Alert.alert(
+        'Info',
+        'Please enter username and password.',
+        [
+          {text: 'OK', onPress: () => console.log('OK Pressed')},
+        ],
+        { cancelable: false }
+      );
+    }
   };
 
   loadingIcon = () => (
