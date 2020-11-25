@@ -22,7 +22,7 @@
             <md-button
               slot="footer"
               class="md-simple md-success md-lg"
-              v-on:click="login"
+              v-on:submit="login"
             >
               Let me in
             </md-button>
