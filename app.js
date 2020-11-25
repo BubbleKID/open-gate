@@ -5,10 +5,10 @@ var app = express();
 var rpio = require('rpio');
 var mysql      = require('mysql');
 var connection = mysql.createConnection({
-  host     : '192.168.1.105',
-  user     : 'dubbo',
-  password : 'ZW4GMH6ahQqdDGnn',
-  database : 'open_gate'
+  host     : '192.168.1.112',
+  user     : 'admin',
+  password : 'admin@AEMG000',
+  database : 'open-gate'
 });
 
 // var RaspiCam = require("raspicam");
