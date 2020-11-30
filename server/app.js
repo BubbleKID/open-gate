@@ -16,7 +16,7 @@ var connection = mysql.createConnection({
 });
 var SIG = 7;
 var corsOptions = {
-  origin: ['http://192.168.1.108:8080'],
+  origin: ['http://192.168.1.108'],
   credentials: true,
   methods: ['GET', 'POST'],
 };

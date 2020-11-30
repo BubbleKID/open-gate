@@ -7,7 +7,7 @@ module.exports = {
     }
   },
   devServer: {
-    proxy: 'http://localhost:8080',
-    public: '192.168.1.108:8080' //local ip
+    proxy: 'http://localhost',
+    public: '192.168.1.108' //local ip
   }
 };

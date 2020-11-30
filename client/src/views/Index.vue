@@ -118,7 +118,7 @@ export default {
             headers: headers
           },{withCredentials: true})
           .then(function(response) {
-            console.log(response);
+            // console.log(response);
             if(response.data === 'success') {
               if (window.PasswordCredential) {
                 const passwordCredential = new PasswordCredential({ email: this.form.email, password: this.form.password });
