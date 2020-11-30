@@ -5,28 +5,33 @@
         <div
           class="md-layout-item md-size-50 md-medium-size-50 md-small-size-60 md-xsmall-size-80 mx-auto text-center"
         >
-          <login-card header-color="green">
-            <h4 slot="title" class="card-title">Login</h4>
-            <p slot="description" class="description">You shall not pass.</p>
-            <lottie id="doorAnimation" slot="title" :options="defaultOptions" :height="300" :width="300" v-on:animCreated="handleAnimation" />
-            <md-field class="md-form-group" slot="inputs">
-              <md-icon>email</md-icon>
-              <label>Email...</label>
-              <md-input type="email" v-model="email"></md-input>
-            </md-field>
-            <md-field class="md-form-group" slot="inputs">
-              <md-icon>lock_outline</md-icon>
-              <label>Password...</label>
-              <md-input type="password" v-model="password"></md-input>
-            </md-field>
-            <md-button
-              slot="footer"
-              class="md-simple md-success md-lg"
-              v-on:submit="login"
-            >
-              Let me in
-            </md-button>
-          </login-card>
+          <form autocomplete="on">
+            <login-card header-color="green">
+              <h4 slot="title" class="card-title">Login</h4>
+              <p slot="description" class="description">You shall not pass.</p>
+              <lottie id="doorAnimation" slot="title" :options="defaultOptions" :height="300" :width="300" v-on:animCreated="handleAnimation" />
+              <md-field class="md-form-group" slot="inputs">
+                <md-icon>email</md-icon>
+                <label>Email...</label>
+                <md-input type="email" v-model="email"></md-input>
+              </md-field>
+              <md-field class="md-form-group" slot="inputs">
+                <md-icon>lock_outline</md-icon>
+                <label>Password...</label>
+                <md-input type="password" v-model="password"></md-input>
+              </md-field>
+              <md-button
+                v-show="!showSuccessAnim"
+                type="submit"
+                slot="footer"
+                class="md-simple md-success md-lg"
+                v-on:click="login"
+              >
+                Let me in
+              </md-button>
+              <lottie v-show="showSuccessAnim" id="successAnimation" slot="footer" :options="successOptions" :height="80"  v-on:animCreated="handleSuccessAnimation" />
+            </login-card>
+          </form>
         </div>
       </div>
     </div>
@@ -38,6 +43,7 @@ import { LoginCard } from "@/components";
 import axios from "axios";
 import lottie from 'lottie-web';
 import * as animationData from '../assets/img/data.json';
+import * as successAnimationData from '../assets/img/success.json';
 
 export default {
   components: {
@@ -56,12 +62,18 @@ export default {
       email: '',
       password: '',
       leafShow: false,
+      showSuccessAnim: false,
       defaultOptions: { 
         animationData: animationData.default,
         loop: false
       },
+      successOptions: { 
+        animationData: successAnimationData.default,
+        loop: false
+      },
       animationSpeed: 1,
       anim: {},
+      successAnim: {},
       style: {
           width: '300px',
           height: '500px',
@@ -90,19 +102,37 @@ export default {
     login() {
       event.preventDefault();
       let animation = this.anim;
+      let successAnimation = this.successAnim;
+      let headers = new Headers();
+      let vm = this;
+      headers.append('Content-Type', 'application/json');
+      headers.append('Accept', 'application/json');
+      headers.append('Access-Control-Allow-Origin', 'http://localhost:3000');
+      headers.append('Access-Control-Allow-Credentials', 'true');
+
       if(this.email !== '' && this.password !== '') {
          axios
-          .post("http://192.168.0.186:3000/login", {
+          .post("http://192.168.1.108:3000/login", {
             email: this.email,
-            password: this.password
-          })
+            password: this.password,
+            headers: headers
+          },{withCredentials: true})
           .then(function(response) {
             console.log(response);
             if(response.data === 'success') {
-               animation.playSegments([[10,37]], true);
+              if (window.PasswordCredential) {
+                const passwordCredential = new PasswordCredential({ email: this.form.email, password: this.form.password });
+                navigator.credentials.store(passwordCredential);
+              }
+              animation.playSegments([[10,37]], true);
+              successAnimation.play();
+              vm.showSuccessAnim = true;
+
               setTimeout(function() {
                 animation.stop();
-              }, 5000);
+                successAnimation.stop();
+                vm.showSuccessAnim = false;
+              }, 3000);
             }
           })
           .catch(function(error) {
@@ -111,7 +141,10 @@ export default {
       }
     },
     handleAnimation: function(anim) {
-        this.anim = anim;
+      this.anim = anim;
+    },
+    handleSuccessAnimation: function(anim) {
+      this.successAnim = anim;
     },
     handleInputChange(){
        if(this.isFocus === false) {
@@ -143,7 +176,9 @@ export default {
   mounted() {
     this.leafActive();
     window.addEventListener("resize", this.leafActive);
-    this.anim.setSpeed(0.5);
+    this.successAnim.setSpeed(0.4);
+    this.successAnim.stop();
+    this.anim.setSpeed(0.3);
     this.anim.stop();
   },
   beforeDestroy() {
