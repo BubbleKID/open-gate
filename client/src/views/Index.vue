@@ -124,6 +124,9 @@ export default {
               successAnimation.play();
               vm.showSuccessAnim = true;
 
+              localStorage.email = vm.email;
+              localStorage.password = vm.password;
+              
               setTimeout(function() {
                 animation.stop();
                 successAnimation.stop();
@@ -181,6 +184,13 @@ export default {
     this.successAnim.stop();
     this.anim.setSpeed(0.3);
     this.anim.stop();
+
+    if (localStorage.email) {
+      this.email = localStorage.email;
+    }
+    if (localStorage.password) {
+      this.password = localStorage.password;
+    }
   },
   beforeDestroy() {
     window.removeEventListener("resize", this.leafActive);
