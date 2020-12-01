@@ -7,7 +7,8 @@ module.exports = {
     }
   },
   devServer: {
+    disableHostCheck: true, 
     proxy: 'http://localhost',
-    public: '192.168.1.108' //local ip
+    public: 'http://635.aemg.com.au' //local ip
   }
 };

@@ -107,12 +107,12 @@ export default {
       let vm = this;
       headers.append('Content-Type', 'application/json');
       headers.append('Accept', 'application/json');
-      headers.append('Access-Control-Allow-Origin', 'http://localhost:3000');
+      headers.append('Access-Control-Allow-Origin', 'http://635.aemg.com.au:60001/');
       headers.append('Access-Control-Allow-Credentials', 'true');
 
       if(this.email !== '' && this.password !== '') {
          axios
-          .post("http://192.168.1.108:3000/login", {
+          .post("http://635.aemg.com.au:60001/login", {
             email: this.email,
             password: this.password,
             headers: headers
