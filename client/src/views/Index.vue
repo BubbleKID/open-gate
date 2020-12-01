@@ -13,12 +13,12 @@
               <md-field class="md-form-group" slot="inputs">
                 <md-icon>email</md-icon>
                 <label>Email...</label>
-                <md-input type="email" v-model="email"></md-input>
+                <md-input type="email" v-model="email" autocomplete="username email"></md-input>
               </md-field>
               <md-field class="md-form-group" slot="inputs">
                 <md-icon>lock_outline</md-icon>
                 <label>Password...</label>
-                <md-input type="password" v-model="password"></md-input>
+                <md-input type="password" v-model="password" autocomplete="new-password"></md-input>
               </md-field>
               <md-button
                 v-show="!showSuccessAnim"
@@ -111,7 +111,7 @@ export default {
       headers.append('Access-Control-Allow-Credentials', 'true');
 
       if(this.email !== '' && this.password !== '') {
-         axios
+        axios
           .post("http://635.aemg.com.au:60001/login", {
             email: this.email,
             password: this.password,
@@ -120,10 +120,6 @@ export default {
           .then(function(response) {
             // console.log(response);
             if(response.data === 'success') {
-              if (window.PasswordCredential) {
-                const passwordCredential = new PasswordCredential({ email: this.form.email, password: this.form.password });
-                navigator.credentials.store(passwordCredential);
-              }
               animation.playSegments([[10,37]], true);
               successAnimation.play();
               vm.showSuccessAnim = true;
@@ -133,6 +129,11 @@ export default {
                 successAnimation.stop();
                 vm.showSuccessAnim = false;
               }, 3000);
+
+              if (window.PasswordCredential) {
+                const passwordCredential = new PasswordCredential({ email: this.email, password: this.password });
+                return navigator.credentials.store(passwordCredential);
+              }
             }
           })
           .catch(function(error) {
