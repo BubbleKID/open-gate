@@ -3,7 +3,7 @@ var cors = require('cors');
 var bodyParser = require('body-parser');
 var app = express();
 var five = require("johnny-five");
-var board = new five.Board({port: "COM5"});
+//var board = new five.Board({port: "COM5"});
 var mysql      = require('mysql');
 var CryptoJS = require("crypto-js");
 var dayjs = require('dayjs');
@@ -16,7 +16,7 @@ var connection = mysql.createConnection({
 });
 var SIG = 7;
 var corsOptions = {
-  origin: ['http://192.168.1.108', 'http://635.aemg.com.au:60000'],
+  origin: ['http://192.168.1.108', 'http://635.aemg.com.au:60000', 'http://localhost:8080'],
   credentials: true,
   methods: ['GET', 'POST'],
 };
@@ -26,10 +26,16 @@ app.use(bodyParser.urlencoded({ extended: false }))
 // parse application/json
 app.use(bodyParser.json())
 
-board.on("ready", () => {
+//board.on("ready", () => {
   console.log('board is ready');
   app.get('/', function (req, res) {
     res.send('Hello World!');
+  });
+
+  app.post('/create_user', function (req, res) {
+    //res.setHeader('Content-Type', 'text/plain');
+    res.send(req.body);
+    //res.end();
   });
 
   app.post('/login',function(req,res){
@@ -77,4 +83,4 @@ board.on("ready", () => {
   app.listen(3000, function () {   
     console.log("Server's up at http://localhost:3000!")
   });
-});
+//});
