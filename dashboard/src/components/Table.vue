@@ -78,6 +78,7 @@
                   v-model="form.password"
                   :disabled="sending"
                 />
+                <md-button class="md-primary md-raised" v-on:click="generateRandomPassword">Random</md-button>
                 <span class="md-error" v-if="!$v.form.password.required">The password is required</span>
                 <span class="md-error" v-else-if="!$v.form.password">Invalid password</span>
               </md-field>
@@ -104,6 +105,9 @@
 
           <md-snackbar :md-active.sync="userSaved">
             The user {{ lastUser }} was saved with success!
+          </md-snackbar>
+          <md-snackbar :md-active.sync="failed">
+            {{message}}
           </md-snackbar>
         </form>
       </div>
@@ -136,18 +140,42 @@ export default {
   },
   data() {
     return {
+      failed: false,
+      message: null,
       users: [],
-      userType: 'aemg',
+      userType: 'guest',
       sending: false,
       form: {
-        name: '',
-        email: '',
-        passowrd: '',
+        name: null,
+        email: null,
+        passowrd: null,
       },
       userSaved: false,
       lastUser: '',
       selectedType: 'guest',
       selectedExpireDate: dayjs().format('YYYY-MM-DD'),
+      characters: [
+        {
+          name: 'Lowercase',
+          value: 'abcdefghijklmnopqrstuvwxyz',
+          checked: true,
+        },
+        {
+          name: 'Uppercase',
+          value: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+          checked: true,
+        },
+        {
+          name: 'Numbers',
+          value: '0123456789',
+          checked: true,
+        },
+        {
+          name: 'Special Characters',
+          value: '_-+=)(*&^%$#@!`~',
+          checked: true,
+        },
+      ],
     };
   },
   validations: {
@@ -166,28 +194,42 @@ export default {
       },
     },
   },
-  mounted() {
-    this.fetchUsers();
+  async mounted() {
+    await this.fetchUsers();
+    this.users = this.users.filter((user) => user.date !== null);
   },
   methods: {
-    getValidationClass() {
-      return 1;
+    getValidationClass(fieldName) {
+      const field = this.$v.form[fieldName];
+
+      if (field) {
+        return {
+          'md-invalid': field.$invalid && field.$dirty,
+        };
+      }
+      return false;
     },
     createNewUser() {
-      axios.post('http://localhost:3000/create_user', {
-        params: {
-          name: this.form.name,
-          email: this.form.email,
-          password: this.form.password,
-          date: this.selectedExpireDate,
-        },
-      })
-        .then((res) => {
-          console.log(res);
+      if (!this.$v.$invalid) {
+        axios.post('http://localhost:3000/create_user', {
+          params: {
+            name: this.form.name,
+            email: this.form.email,
+            password: this.form.password,
+            date: this.selectedExpireDate,
+          },
         })
-        .catch((err) => {
-          console.error(err);
-        });
+          .then((res) => {
+            this.saveUser();
+            console.log(res);
+          })
+          .catch((err) => {
+            this.message = err.response.data.error;
+            this.failed = true;
+            // console.log(err.response.data.error);
+            console.error(err);
+          });
+      }
     },
     async fetchUsers() {
       await axios.get('http://localhost:3000/fetch_users')
@@ -227,8 +269,40 @@ export default {
       this.$v.$touch();
 
       if (!this.$v.$invalid) {
-        this.saveUser();
+        // this.saveUser();
       }
+    },
+    saveUser() {
+      this.sending = true;
+
+      // Instead of this timeout, here you can call your API
+      window.setTimeout(() => {
+        this.lastUser = `${this.form.name}`;
+        this.userSaved = true;
+        this.sending = false;
+        this.clearForm();
+      }, 1500);
+    },
+    clearForm() {
+      this.$v.$reset();
+      this.form.name = null;
+      this.form.email = null;
+      this.form.password = null;
+      this.selectedExpireDate = dayjs().format('YYYY-MM-DD');
+    },
+    generateRandomPassword() {
+      let result = '';
+      let charactersVal = '';
+
+      for (let j = 0; j < this.characters.length; j += 1) {
+        if (this.characters[j].checked) {
+          charactersVal += this.characters[j].value;
+        }
+      }
+      for (let i = 0; i < 5; i += 1) {
+        result += charactersVal.charAt(Math.floor(Math.random() * charactersVal.length));
+      }
+      Vue.set(this.form, 'password', result);
     },
   },
 };

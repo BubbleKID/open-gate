@@ -7,6 +7,13 @@ var five = require("johnny-five");
 var mysql      = require('mysql');
 var CryptoJS = require("crypto-js");
 var dayjs = require('dayjs');
+var utc = require('dayjs/plugin/utc'); // dependent on utc plugin
+var timezone = require('dayjs/plugin/timezone');
+var isSameOrAfter = require('dayjs/plugin/isSameOrAfter');
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(isSameOrAfter);
+const e = require('express');
 
 var connection = mysql.createConnection({
   host     : '192.168.1.112',
@@ -26,27 +33,34 @@ app.use(bodyParser.urlencoded({ extended: false }))
 // parse application/json
 app.use(bodyParser.json())
 
-//board.on("ready", () => {
+board.on("ready", () => {
   console.log('board is ready');
   app.get('/', function (req, res) {
     res.send('Hello World!');
   });
 
   app.post('/create_user', function (req, res) {
-    connection.query('INSERT INTO user (email, user_name, password, date) VALUES (?, ?, ?, ?)',
-    [req.body.params.email, req.body.params.name, req.body.params.password, req.body.params.date],
-    function (error, results, fields) {
+    connection.query('SELECT * FROM user WHERE email = ?', [req.body.params.email], function (error, results, fields) {
       res.setHeader('Content-Type', 'text/plain');
-      if(error) {
-        res.send(error); 
+      if(results.length === 0) {
+        let password = CryptoJS.enc.Hex.stringify(CryptoJS.SHA1(req.body.params.password));
+        connection.query('INSERT INTO user (email, user_name, password, date) VALUES (?, ?, ?, ?)',
+        [req.body.params.email, req.body.params.name, password, req.body.params.date],
+        function (error, results, fields) {
+          if(error) {
+            // res.setHeader('Content-Type', 'text/plain');
+            res.send('User is already exits.'); 
+            // res.end();
+          }
+          // res.setHeader('Content-Type', 'text/plain');
+          res.send(password);
+          // res.end();
+        });
+      } else {
+        res.status(500).send({ error: 'Email is already exits.' });
         res.end();
       }
-      res.send(results);
-      res.end();
     });
-    //res.setHeader('Content-Type', 'text/plain');
-    //res.send(req.body);
-    //res.end();
   });
 
   app.get('/fetch_users', function (req, res) {
@@ -60,7 +74,14 @@ app.use(bodyParser.json())
   app.post('/login',function(req,res){
     connection.query('SELECT * FROM user WHERE email = ?', [req.body.email], function (error, results, fields) {
       if (error) throw error;
-      if(results.length > 0) {
+      let isAfter = true;
+
+      // 如果是临时账户的话
+      if(results[0]['date'] !== null) {
+        isAfter = dayjs(results[0]['date']).isSameOrAfter(dayjs(), 'day');
+      }
+
+      if(results.length > 0 && isAfter) {
         if (CryptoJS.SHA1(req.body.password) == results[0].password) { 
           console.log(req.body.email + ' is logged in.');
           res.setHeader('Content-Type', 'text/plain');
@@ -99,7 +120,7 @@ app.use(bodyParser.json())
       }
     }); 
   });
-  app.listen(3000, function () {   
+  app.listen(3000, function () {
     console.log("Server's up at http://localhost:3000!")
   });
-//});
+});
