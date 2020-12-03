@@ -33,9 +33,28 @@ app.use(bodyParser.json())
   });
 
   app.post('/create_user', function (req, res) {
+    connection.query('INSERT INTO user (email, user_name, password, date) VALUES (?, ?, ?, ?)',
+    [req.body.params.email, req.body.params.name, req.body.params.password, req.body.params.date],
+    function (error, results, fields) {
+      res.setHeader('Content-Type', 'text/plain');
+      if(error) {
+        res.send(error); 
+        res.end();
+      }
+      res.send(results);
+      res.end();
+    });
     //res.setHeader('Content-Type', 'text/plain');
-    res.send(req.body);
+    //res.send(req.body);
     //res.end();
+  });
+
+  app.get('/fetch_users', function (req, res) {
+    connection.query('SELECT * FROM user', function (error, results, fields) {
+      res.setHeader('Content-Type', 'text/plain');
+      res.send(results);
+      res.end();
+    });
   });
 
   app.post('/login',function(req,res){

@@ -3,9 +3,16 @@
     <div class="md-layout md-gutter">
       <div class="md-layout-item md-size-60">
         <md-field>
-          <md-select v-model="userType" name="user_type" id="user_type" placeholder="User Type">
-            <md-option value="australia">AEMG User</md-option>
-            <md-option value="brazil">Guest User</md-option>
+          <md-select
+            v-model="userType"
+            name="user_type"
+            id="user_type"
+            @md-selected="onUserTypeChange"
+            placeholder="User Type"
+          >
+            <md-option value="all">All</md-option>
+            <md-option value="aemg">AEMG User</md-option>
+            <md-option value="guest">Guest User</md-option>
           </md-select>
         </md-field>
       </div>
@@ -16,36 +23,12 @@
           <md-table-toolbar>
             <h1 class="md-title">Users</h1>
           </md-table-toolbar>
-          <md-table-row>
-            <md-table-head md-numeric>ID</md-table-head>
-            <md-table-head>User Name</md-table-head>
-            <md-table-head>Email</md-table-head>
-            <md-table-head>Password</md-table-head>
-            <md-table-head>Expire Date</md-table-head>
-          </md-table-row>
-
-          <md-table-row>
-            <md-table-cell md-numeric>1</md-table-cell>
-            <md-table-cell>Shawna Dubbin</md-table-cell>
-            <md-table-cell>sdubbin0@geocities.com</md-table-cell>
-            <md-table-cell>Male</md-table-cell>
-            <md-table-cell>Null</md-table-cell>
-          </md-table-row>
-
-          <md-table-row>
-            <md-table-cell md-numeric>2</md-table-cell>
-            <md-table-cell>Odette Demageard</md-table-cell>
-            <md-table-cell>odemageard1@spotify.com</md-table-cell>
-            <md-table-cell>Female</md-table-cell>
-            <md-table-cell>Null</md-table-cell>
-          </md-table-row>
-
-          <md-table-row>
-            <md-table-cell md-numeric>3</md-table-cell>
-            <md-table-cell>Vera Taleworth</md-table-cell>
-            <md-table-cell>vtaleworth2@google.ca</md-table-cell>
-            <md-table-cell>Male</md-table-cell>
-            <md-table-cell>Null</md-table-cell>
+          <md-table-row v-for="user in users" v-bind:key="user.id">
+            <md-table-cell md-numeric>{{user.id}}</md-table-cell>
+            <md-table-cell>{{user.user_name}}</md-table-cell>
+            <md-table-cell>{{user.email}}</md-table-cell>
+            <md-table-cell>{{user.password}}</md-table-cell>
+            <md-table-cell>{{user.date === null ? 'Null' : user.date}}</md-table-cell>
           </md-table-row>
         </md-table>
       </div>
@@ -100,14 +83,14 @@
               </md-field>
 
               <md-field>
-                <label for="movies">User Type</label>
-                <md-select v-model="selectedType" name="movies" id="movies">
-                  <md-option value="aemg_user">AEMG User</md-option>
+                <label for="new_user_type">User Type</label>
+                <md-select v-model="selectedType" name="new_user_type" id="new_user_type" @md-selected="onNewUsertypeChange">
+                  <md-option value="aemg">AEMG User</md-option>
                   <md-option value="guest">Guest</md-option>
                 </md-select>
               </md-field>
 
-              <md-datepicker v-if="selectedType !== 'aemg_user'" v-model="selectedExpireDate">
+              <md-datepicker v-if="selectedType !== 'aemg'" v-model="selectedExpireDate">
                 <label>Select Expire Date</label>
               </md-datepicker>
             </md-card-content>
@@ -153,14 +136,14 @@ export default {
   },
   data() {
     return {
-      userType: 'AEMG User',
+      users: [],
+      userType: 'aemg',
       sending: false,
       form: {
         name: '',
         email: '',
+        passowrd: '',
       },
-      name: '',
-      email: '',
       userSaved: false,
       lastUser: '',
       selectedType: 'guest',
@@ -183,6 +166,9 @@ export default {
       },
     },
   },
+  mounted() {
+    this.fetchUsers();
+  },
   methods: {
     getValidationClass() {
       return 1;
@@ -190,11 +176,10 @@ export default {
     createNewUser() {
       axios.post('http://localhost:3000/create_user', {
         params: {
-          name: this.name,
-          email: this.email,
-          password: this.password,
-          typs: this.selectedType,
-          expireDate: this.selectedExpireDate,
+          name: this.form.name,
+          email: this.form.email,
+          password: this.form.password,
+          date: this.selectedExpireDate,
         },
       })
         .then((res) => {
@@ -204,8 +189,39 @@ export default {
           console.error(err);
         });
     },
-    fetchUsers() {
+    async fetchUsers() {
+      await axios.get('http://localhost:3000/fetch_users')
+        .then((res) => {
+          this.users = res.data;
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    },
+    onUserTypeChange(val) {
+      if (val === 'all') {
+        this.fetchUsers();
+      }
 
+      if (val === 'aemg') {
+        this.fetchUsers();
+        this.users = this.users.filter((user) => user.date === null);
+      }
+
+      if (val === 'guest') {
+        this.fetchUsers().then(() => {
+          this.users = this.users.filter((user) => user.date !== null);
+        });
+      }
+    },
+    onNewUsertypeChange(val) {
+      if (val === 'aemg') {
+        this.selectedExpireDate = null;
+      }
+
+      if (val === 'guest') {
+        this.selectedExpireDate = dayjs().format('YYYY-MM-DD');
+      }
     },
     validateUser() {
       this.$v.$touch();
