@@ -56,10 +56,28 @@ board.on("ready", () => {
           res.send(password);
           // res.end();
         });
-      } else {
-        res.status(500).send({ error: 'Email is already exits.' });
-        res.end();
+      } 
+      
+      if(results.length === 1) {
+        let password = CryptoJS.enc.Hex.stringify(CryptoJS.SHA1(req.body.params.password));
+        connection.query('UPDATE user SET user_name = ?, password = ?, date = ? WHERE email = ?',
+        [req.body.params.name, password, req.body.params.date, req.body.params.email],
+        function (error, results, fields) {
+          if(error) {
+            // res.setHeader('Content-Type', 'text/plain');
+            res.send('Update error.'); 
+            // res.end();
+          }
+          // res.setHeader('Content-Type', 'text/plain');
+          res.send(password);
+          // res.end();
+        });
       }
+      
+      // else {
+        //res.status(500).send({ error: 'Email is already exits.' });
+        // res.end();
+      // }
     });
   });
 
