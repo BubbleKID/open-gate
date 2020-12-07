@@ -23,6 +23,13 @@
           <md-table-toolbar>
             <h1 class="md-title">Users</h1>
           </md-table-toolbar>
+            <md-table-row>
+            <md-table-cell md-numeric>Id</md-table-cell>
+            <md-table-cell>Name</md-table-cell>
+            <md-table-cell>Email</md-table-cell>
+            <md-table-cell>Password</md-table-cell>
+            <md-table-cell>Expire date</md-table-cell>
+          </md-table-row>
           <md-table-row v-for="user in users" v-bind:key="user.id">
             <md-table-cell md-numeric>{{user.id}}</md-table-cell>
             <md-table-cell>{{user.user_name}}</md-table-cell>
@@ -211,7 +218,7 @@ export default {
     },
     createNewUser() {
       if (!this.$v.$invalid) {
-        axios.post('http://localhost:3000/create_user', {
+        axios.post('http://192.168.1.108:3000/create_user', {
           params: {
             name: this.form.name,
             email: this.form.email,
@@ -232,7 +239,7 @@ export default {
       }
     },
     async fetchUsers() {
-      await axios.get('http://localhost:3000/fetch_users')
+      await axios.get('http://192.168.1.108:3000/fetch_users')
         .then((res) => {
           this.users = res.data;
         })
