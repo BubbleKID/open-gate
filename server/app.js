@@ -21,6 +21,16 @@ var connection = mysql.createConnection({
   password : 'admin@AEMG000',
   database : 'open-gate'
 });
+
+connection.connect(function(err) {
+  if (err) {
+    console.error('error connecting: ' + err.stack);
+    return;
+  }
+ 
+  console.log('connected as id ' + connection.threadId);
+});
+
 var SIG = 7;
 var corsOptions = {
   origin: ['http://192.168.1.108', 'http://635.aemg.com.au:60000', 'http://localhost:8080', 'http://192.168.1.108:8080'],
